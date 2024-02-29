@@ -65,9 +65,7 @@ class CustomFormField extends StatelessWidget {
     final isError = errorMessage != null && errorMessage != '';
     final borderDecoration = OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
-      borderSide: BorderSide(
-        color: isError ? ThemeColors.darkRedRGB : ThemeColors.grey,
-      ),
+      borderSide: BorderSide.none,
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

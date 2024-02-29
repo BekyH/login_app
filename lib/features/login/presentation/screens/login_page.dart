@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:simple_login/features/login/presentation/bloc/auth_bloc.dart';
+import 'package:simple_login/features/login/presentation/bloc/auth_event.dart';
+import 'package:simple_login/features/login/presentation/bloc/auth_state.dart';
+
 import 'package:simple_login/features/login/presentation/widgets/custom_form_field.dart';
 import 'package:simple_login/features/login/presentation/widgets/custombutton.dart';
+import 'package:simple_login/features/login/presentation/widgets/loaing_button.dart';
+import 'package:simple_login/themes/color.dart';
 import 'package:simple_login/themes/text.dart';
 
 class LoginPage extends StatefulWidget {
@@ -14,7 +21,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-   String? emailValidation(String? fieldContent) {
+  final _formKey = GlobalKey<FormState>();
+  String? emailValidation(String? fieldContent) {
     if (fieldContent == null || fieldContent.isEmpty) {
       return "Please enter you email";
     }
@@ -26,7 +34,8 @@ class _LoginPageState extends State<LoginPage> {
     }
     return null;
   }
-   String? passwordValidation(String? fieldContent) {
+
+  String? passwordValidation(String? fieldContent) {
     if (fieldContent == null || fieldContent.isEmpty) {
       return "Password cannot be empty";
     }
@@ -56,67 +65,114 @@ class _LoginPageState extends State<LoginPage> {
 
     return null; // Password meets all criteria
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: SafeArea(
             child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Log In',
-            style: BoldText.header2,
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-           CustomFormField(
-            placeholder: 'Email',
-            controller: emailController,
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-           CustomPasswordField(
-            placeholder: 'Password',
-            controller: passwordController,
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          
-          TextButton(
-            onPressed: () {},
-            child: const Text(
-              'Forget Password?',
-              style: RegularText.body1,
-            ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          ButtonAction('Log In', onPressed: () {}),
-          const SizedBox(
-            height: 20,
-          ),
-          Center(
-            child: RichText(
-              text: const TextSpan(
-                  text: "Don't have account?",
-                  style: RegularText.body1,
-                  children: [
-                    TextSpan(
-                      text: ' Sign up',
-                      style: MediumText.body1,
-                    ),
-                  ]),
-            ),
-          ),
-        ],
-      ),
-    )));
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Log In',
+                        style: BoldText.header2,
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      CustomFormField(
+                        placeholder: 'Email',
+                        controller: emailController,
+                        validator: emailValidation,
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      CustomPasswordField(
+                        placeholder: 'Password',
+                        controller: passwordController,
+                        validator: passwordValidation,
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          'Forget Password?',
+                          style: RegularText.body1,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      BlocListener<AuthBloc, AuthState>(
+                        listener: (context, state) {
+                          if (state is AuthAuthenticated) {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Text(
+                                "Logged in Successfully",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              backgroundColor: ThemeColors.green,
+                            ));
+                       
+                          } else if (state is AuthError) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(state.errorMessage,
+                                  style: const TextStyle(color: Colors.white)),
+                              backgroundColor: Colors.red,
+                            ));
+                          } else {}
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(15),
+                          child: BlocBuilder<AuthBloc, AuthState>(
+                            builder: (context, state) {
+                              if (state is AuthLoading) {
+                                return LoadingButton(
+                                  title: "Logging in",
+                                  color: ThemeColors.green,
+                                  onClick: () {},
+                                  loadingState: true,
+                                );
+                              } else {
+                                return ButtonAction('Log In', onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    context.read<AuthBloc>().add(LoginEvent(
+                                        email: emailController.text,
+                                        password: passwordController.text));
+                                  }
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Center(
+                        child: RichText(
+                          text: const TextSpan(
+                              text: "Don't have account?",
+                              style: RegularText.body1,
+                              children: [
+                                TextSpan(
+                                  text: ' Sign up',
+                                  style: MediumText.body1,
+                                ),
+                              ]),
+                        ),
+                      ),
+                    ],
+                  ),
+                ))));
   }
 }
