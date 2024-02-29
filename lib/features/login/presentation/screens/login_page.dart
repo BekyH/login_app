@@ -67,6 +67,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: SafeArea(
@@ -122,7 +129,6 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               backgroundColor: ThemeColors.green,
                             ));
-                       
                           } else if (state is AuthError) {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(state.errorMessage,

@@ -14,7 +14,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           if (user) {
             emit(AuthAuthenticated());
           } else {
-            emit(AuthError(errorMessage: "Invalid email or password"));
+            emit(AuthError(errorMessage: "Incorrect email or password"));
           }
         } catch (e) {
           emit(AuthError(errorMessage: e.toString()));
